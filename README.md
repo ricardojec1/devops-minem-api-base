@@ -47,3 +47,4 @@ dotnet test
 
 ##Historia
 > Modificado por Martín Valenzuela en el Laboratorio 2.
+> Modificado por Ricado Errea en el Laboratorio 2.

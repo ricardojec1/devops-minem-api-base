@@ -35,34 +35,34 @@ jobs:
           path: ./publish
           retention-days: 7
 
-    test:              # job 2: tests + cobertura (se define en Fase B)
-      needs: build     # espera a que build termine exitosamente
-      strategy:
-        matrix:
-          os: [ubuntu-latest, windows-latest]
-          dotnet: ['8.0.x']
-        fail-fast: false   # si uno falla, los demás continúan
-      runs-on: ${{ matrix.os }}
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: ${{ matrix.dotnet }}
-        - name: Restaurar dependencias
-          run: dotnet restore
-        - name: Ejecutar tests con cobertura
-          run: |
-            dotnet test \
-              --configuration Release \
-              --no-restore \
-              --verbosity normal \
-              --collect:'XPlat Code Coverage' \
-              --results-directory ./coverage
-        - name: Subir reporte de cobertura
-          uses: actions/upload-artifact@v4
-          with:
-            name: coverage-${{ matrix.os }}-${{ github.run_number }}
-            path: ./coverage
+  test:              # job 2: tests + cobertura (se define en Fase B)
+    needs: build     # espera a que build termine exitosamente
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        dotnet: ['8.0.x']
+      fail-fast: false   # si uno falla, los demás continúan
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+      - name: Restaurar dependencias
+        run: dotnet restore
+      - name: Ejecutar tests con cobertura
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-restore \
+            --verbosity normal \
+            --collect:'XPlat Code Coverage' \
+            --results-directory ./coverage
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-${{ github.run_number }}
+          path: ./coverage
 
 
 

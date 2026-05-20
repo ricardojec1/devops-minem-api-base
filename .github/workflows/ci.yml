@@ -1,0 +1,63 @@
+# .github/workflows/ci.yml
+name: CI - DevOps MINEM
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  APP_ENV: ${{ secrets.APP_ENVIRONMENT }}   # secret disponible como variable
+
+jobs:
+  build:             # job 1: compila y publica
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restaurar dependencias
+        run: dotnet restore
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
+      - name: Publicar aplicación
+        run: |
+          dotnet publish src/DevOpsMinem.API \
+            --configuration Release \
+            --output ./publish
+      - name: Upload artefacto de la API
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-release-${{ github.run_number }}
+          path: ./publish
+          retention-days: 7
+
+  test:              # job 2: tests + cobertura (se define en Fase B)
+    needs: build     # espera a que build termine exitosamente
+    runs-on: ubuntu-latest
+    steps:
+      #- run: echo "Job test pendiente – ver Fase B"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restaurar dependencias
+        run: dotnet restore
+      - name: Ejecutar tests con cobertura
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-restore \
+            --verbosity normal \
+            --collect:'XPlat Code Coverage' \
+            --results-directory ./coverage
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.run_number }}
+          path: ./coverage
+
+
